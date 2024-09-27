@@ -1,215 +1,186 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>CodePen - JNC Shock Collar Trivia</title>
-  
-
-</head>
-<body>
-<!-- partial:index.partial.html -->
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jordy's Carnival</title>
+    <title>JNC Arcade</title>
     <style>
         body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #000036;
             font-family: Arial, sans-serif;
-        }
-        #gameContainer {
-            position: relative;
-            width: 300px;
-            height: 600px;
-            background-image: url('https://static.wixstatic.com/media/7b5caa_f4339a6646f04b9293753b555a87c2a5~mv2.jpg');
-            background-size: cover;
-            background-position: center;
-            border: 0px solid #fff;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            width: 100%;
-            height: 100%;
-        }
-        #dunkGif {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            z-index: 2;
-        }
-        #score, #instructions {
-            position: absolute;
-            z-index: 3;
-            color: red; /* Changed to red */
-        }
-        #score {
-            top: 10px;
-            left: 10px;
-            font-size: 24px;
-            text-align: left;
-        }
-        #instructions {
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 20px;
+            background-color: #f3f3f3;
+            margin: 0;
+            padding: 0;
             text-align: center;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        header p {
+            font-size: 16px;
+        }
+        #username-section {
+            margin: 20px 0;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #games-section {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .game-btn {
+            display: inline-block;
+            width: 45%;
+            max-width: 200px;
+            height: 150px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+            box-sizing: border-box;
+        }
+        .game-btn:hover {
+            background-color: #45a049;
+        }
+        #leaderboard {
+            background-color: #ddd;
+            padding: 20px;
+            margin: 20px 10px;
+            box-sizing: border-box;
+        }
+        #leaderboard h2 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+        }
+        #leaderboard .score {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            position: relative;
+            bottom: 0;
             width: 100%;
-            display: none;
+            font-size: 14px;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 20px;
+            }
+            header p {
+                font-size: 14px;
+            }
+            .game-btn {
+                width: 80%;
+                margin: 10px auto;
+                height: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 18px;
+            }
+            header p {
+                font-size: 12px;
+            }
+            .game-btn {
+                width: 100%;
+                height: 100px;
+                font-size: 14px;
+            }
+            input[type="text"] {
+                font-size: 14px;
+            }
+            button {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas" width="300" height="600"></canvas>
-        <img id="dunkGif" src="https://static.wixstatic.com/media/7b5caa_2247e0ad7f384415a3703bd8ddad11b5~mv2.gif" alt="Dunk GIF">
-        <div id="score">Score: 0</div>
-        <div id="instructions">Click to try again</div>
-    </div>
+    <header>
+        <h1>JNC Arcade</h1>
+        <p>Welcome to the JNC Arcade! Choose a game and have fun!</p>
+    </header>
+    <section id="username-section">
+        <input type="text" id="username" placeholder="Enter your username" />
+        <button onclick="setUsername()">Start Session</button>
+    </section>
+    <section id="games-section">
+        <button class="game-btn" onclick="playGame('cakehole.html')">Cake Game</button>
+        <button class="game-btn" onclick="playGame('ants.html')">Ant Wars</button>
+        <button class="game-btn" onclick="playGame('jncmemory.html')">Memory Game</button>
+        <button class="game-btn" onclick="playGame('dunkjordy.html')">Dunk Jordy</button>
+        <button class="game-btn" onclick="playGame('jnctrivia.html')">Trivia Game</button>
+    </section>
+    <section id="leaderboard">
+        <h2>Leaderboard</h2>
+        <div class="score" id="top-cake-game">Cake Game: -</div>
+        <div class="score" id="top-ant-wars">Ant Wars: -</div>
+        <div class="score" id="top-memory-game">Memory Game: -</div>
+        <div class="score" id="top-dunk-jordy">Dunk Jordy: -</div>
+        <div class="score" id="top-trivia-game">Trivia Game: -</div>
+    </section>
+    <footer>
+        <p>© 2024 Jams 'N' Cocktails Podcast. All rights reserved.</p>
+    </footer>
+
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const dunkGif = document.getElementById('dunkGif');
-        const scoreElement = document.getElementById('score');
-        const instructions = document.getElementById('instructions');
-
-        const target = {
-            x: Math.random() * (canvas.width - 100),
-            y: Math.random() * (canvas.height - 100),
-            radius: 40,
-            hit: false
-        };
-
-        let score = 0;
-        let gamePaused = false;
-        let intervalTime = 2000; // Initial interval time for target movement
-        let intervalId;
-
-        // Start the game loop
-        startGame();
-
-        function startGame() {
-            intervalId = setInterval(() => {
-                if (!gamePaused && !target.hit) {
-                    resetTarget();
-                    updateGame();
-                }
-            }, intervalTime);
-
-            updateGame();
+        function setUsername() {
+            const username = document.getElementById('username').value;
+            if(username) {
+                localStorage.setItem('username', username);
+                alert(`Welcome, ${username}! Choose a game to start playing.`);
+            } else {
+                alert('Please enter a username to start.');
+            }
         }
 
-        canvas.addEventListener('click', handleClick);
-        dunkGif.addEventListener('click', handleClick);
-
-        function handleClick(event) {
-            if (gamePaused) {
-                gamePaused = false;
-                dunkGif.style.display = 'none'; // Hide the GIF
-                canvas.style.display = 'block'; // Show the canvas
-                instructions.style.display = 'none'; // Hide instructions
-                resetTarget();
-                increaseDifficulty(); // Make the target harder to hit after each score
-                updateGame();
+        function playGame(game) {
+            const username = localStorage.getItem('username');
+            if(!username) {
+                alert('Please enter a username before choosing a game.');
                 return;
             }
-
-            const rect = canvas.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const clickY = event.clientY - rect.top;
-
-            const dist = Math.sqrt((clickX - target.x) ** 2 + (clickY - target.y) ** 2);
-
-            if (dist < target.radius) {
-                target.hit = true;
-                score++;
-                scoreElement.textContent = `Score: ${score}`;
-                gamePaused = true;
-                showGif(); // Show the animated GIF
-            }
+            // Redirect to game URL with username as parameter
+            window.location.href = `${game}?username=${username}`;
         }
 
-        function drawTarget() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before drawing
-            ctx.beginPath();
-            ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2, false);
-            ctx.fillStyle = 'white';
-            ctx.fill();
-            ctx.strokeStyle = 'red';
-            ctx.lineWidth = 5;
-            ctx.stroke();
-            ctx.closePath();
-
-            ctx.beginPath();
-            ctx.arc(target.x, target.y, target.radius - 10, 0, Math.PI * 2, false);
-            ctx.fillStyle = 'red';
-            ctx.fill();
-            ctx.closePath();
-
-            ctx.beginPath();
-            ctx.arc(target.x, target.y, target.radius - 20, 0, Math.PI * 2, false);
-            ctx.fillStyle = 'white';
-            ctx.fill();
-            ctx.closePath();
-
-            ctx.beginPath();
-            ctx.arc(target.x, target.y, target.radius - 30, 0, Math.PI * 2, false);
-            ctx.fillStyle = 'red';
-            ctx.fill();
-            ctx.closePath();
+        function loadLeaderboard() {
+            document.getElementById('top-cake-game').innerText = `Cake Game: ${localStorage.getItem('top-cake-game') || '-'}`;
+            document.getElementById('top-ant-wars').innerText = `Ant Wars: ${localStorage.getItem('top-ant-wars') || '-'}`;
+            document.getElementById('top-memory-game').innerText = `Memory Game: ${localStorage.getItem('top-memory-game') || '-'}`;
+            document.getElementById('top-dunk-jordy').innerText = `Dunk Jordy: ${localStorage.getItem('top-dunk-jordy') || '-'}`;
+            document.getElementById('top-trivia-game').innerText = `Trivia Game: ${localStorage.getItem('top-trivia-game') || '-'}`;
         }
 
-        function resetTarget() {
-            target.hit = false;
-            target.x = Math.random() * (canvas.width - 2 * target.radius) + target.radius;
-            target.y = Math.random() * (canvas.height - 2 * target.radius) + target.radius;
-        }
-
-        function showGif() {
-            canvas.style.display = 'none'; // Hide the canvas
-            dunkGif.style.display = 'block'; // Show the GIF
-            instructions.style.display = 'block'; // Show instructions
-        }
-
-        function updateGame() {
-            if (gamePaused) return;
-
-            drawTarget();
-
-            requestAnimationFrame(updateGame);
-        }
-
-        function increaseDifficulty() {
-            clearInterval(intervalId);
-            intervalTime *= 0.9; // Increase speed by reducing interval time by 10%
-            target.radius *= 0.9; // Reduce target size by 10%
-            if (target.radius < 10) {
-                target.radius = 10; // Set a minimum target size to ensure it's always hittable
-            }
-            intervalId = setInterval(() => {
-                if (!gamePaused && !target.hit) {
-                    resetTarget();
-                    updateGame();
-                }
-            }, intervalTime);
-        }
+        window.onload = loadLeaderboard;
     </script>
-</body>
-</html>
-<!-- partial -->
-  
 </body>
 </html>
