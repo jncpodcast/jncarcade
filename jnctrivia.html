@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - JNC Shock Collar Trivia</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JNC Trivia Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000036;
+      /* Updated background color */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      /* Prevent scrolling when image is shown */
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 300px;
+      max-width: 90%;
+    }
+
+    .question {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .options {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin: 10px 0;
+    }
+
+    .options button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .options button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    #wrongImage {
+      display: none;
+      /* Hide the image initially */
+      position: absolute;
+      max-width: 80%;
+      max-height: 80%;
+      z-index: 10;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="question" id="question">What special shot recipe was featured in the JNC Shot of the Week to honor Jimi Hendrix?</div>
+    <ul class="options" id="options">
+      <li><button onclick="checkAnswer('A')">A) Purple Haze</button></li>
+      <li><button onclick="checkAnswer('B')">B) Fireball</button></li>
+      <li><button onclick="checkAnswer('C')">C) Blue Lagoon</button></li>
+      <li><button onclick="checkAnswer('D')">D) Cherry Bomb</button></li>
+    </ul>
+    <div id="feedback"></div>
+  </div>
+
+  <img id="wrongImage" src="" alt="Wrong Answer Image">
+
+  <audio id="wrongSound" src="https://static.wixstatic.com/mp3/7b5caa_61bafb0de362479aa97a6b464a1dde94.wav"></audio>
+  <audio id="correctSound" src="https://static.wixstatic.com/mp3/7b5caa_7d9df86132e142ffbe1949d2677e2cd6.wav"></audio>
+
+  <script>
+    const questions = [{
+        question: "What special shot recipe was featured in the JNC Shot of the Week to honor Jimi Hendrix?",
+        options: ["Purple Haze", "Fireball", "Blue Lagoon", "Cherry Bomb"],
+        answer: 'A'
+      },
+      {
+        question: "What unique theme was featured during the episode celebrating Jordy's birthday?",
+        options: ["Carnival theme with a dunk tank finale", "Rock 'n' Roll costume party", "80's neon dance party", "90's TV show trivia"],
+        answer: 'A'
+      },
+      {
+        question: "Which musical duo, featuring a father and daughter, was featured on the show and has been longtime friends with Brad Brock?",
+        options: ["The McGraws", "The Band Freya", "The Johnsons", "The Harmonic Duo"],
+        answer: 'B'
+      },
+      {
+        question: "Which product is a partner of Jams 'N' Cocktails, known for its all-natural insect repellent?",
+        options: ["Mosquito Magic", "Bug Barrier", "The Bug Juice", "Insect Away"],
+        answer: 'C'
+      },
+      {
+        question: "Which local Treasure Coast brewery was featured in a special episode highlighting their craft beers?",
+        options: ["Sailfish Brewing Company", "Walking Tree Brewery", "Hop Life Brewing", "Pierced Ciderworks"],
+        answer: 'C'
+      },
+      {
+        question: "Which game from the JNC Arcade involves flipping cups in a head-to-head challenge?",
+        options: ["Dunk Jordy", "Derek’s Cake Hole Adventure", "Brad’s Ant Wars", "Elly’s Flip Cup Challenge"],
+        answer: 'D'
+      },
+      {
+        question: "What was the theme of our 2023 Halloween Spooktacular episode?",
+        options: ["Zombies", "Haunted House", "Ghost Pirates", "Spooky Cemetery"],
+        answer: 'B'
+      },
+      {
+        question: "Which destruction crew member is considered the 'master of disaster'?",
+        options: ["Derek", "Elly", "Jordyn", "Brad"],
+        answer: 'A'
+      },
+      {
+        question: "Which destruction crew member is known as 'the bad b*tch'?",
+        options: ["Derek", "Elly", "Jordyn", "Brad"],
+        answer: 'B'
+      },
+      {
+        question: "What classic gameshow was recreated for an episode of JNC?",
+        options: ["Password", "Tattle Tales", "Match Game", "The Price Is Right"],
+        answer: 'C'
+      },
+      {
+        question: "Which musical group appeared as guests dressed as the Teenage Mutant Ninja Turtles?",
+        options: ["Sandman Sleeps", "Aerouant", "Switch N' Whisky", "Brothers After All"],
+        answer: 'A'
+      },
+      {
+        question: "What iconic nightclub did we feature on a groovy disco episode?",
+        options: ["CBGB", "The Steel Pony", "The Pink Pony Club", "Studio 54"],
+        answer: 'D'
+      },
+      {
+        question: "During an episode of JNC, what did we slap each other in the face with?",
+        options: ["Flour Tortilla", "Sandal", "Our Hands", "Hot Dog"],
+        answer: 'A'
+      },
+      {
+        question: "During a past episode, which hot-food challenge did our friend Al Beltran join us for?",
+        options: ["The One Chip Challenge", "World's Hottest Chocolate Challenge", "The Death Nut Challenge", "Lil Nitro Challenge"],
+        answer: 'C'
+      },
+      {
+        question: "Who's song is featured during our Beer:30 breaks during our recent episodes?",
+        options: ["Kevin McLoughlin", "Brad Brock", "Mike Faurot", "Chris Springer"],
+        answer: 'A'
+      },
+      {
+        question: "What is Brad's classic sign off for each episode of JNC?",
+        options: ["Bye Bye for now!", "We love ya, goodnight!", "After a while, crocodiles", "Tata!"],
+        answer: 'B'
+      }
+    ];
+    const wrongImages = [
+      'https://static.wixstatic.com/media/7b5caa_045216c470eb44a3b75cab2d2e91d20e~mv2.jpg',
+      'https://static.wixstatic.com/media/7b5caa_1d20d790c57e4226bc82369c24a1c1ae~mv2.jpg',
+      'https://static.wixstatic.com/media/7b5caa_0ceb27b7c16846b0bf8c4b8bbacf16d2~mv2.jpg',
+      'https://static.wixstatic.com/media/7b5caa_d01a0181a6e441d9bc5fcea04af4e689~mv2.jpg'
+    ];
+    let answeredQuestions = [];
+    let score = 0;
+
+    function getRandomImage() {
+      const randomIndex = Math.floor(Math.random() * wrongImages.length);
+      return wrongImages[randomIndex];
+    }
+
+    function getRandomQuestion() {
+      if (answeredQuestions.length === questions.length) {
+        endGame();
+        return;
+      }
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * questions.length);
+      } while (answeredQuestions.includes(randomIndex));
+      answeredQuestions.push(randomIndex);
+      return questions[randomIndex];
+    }
+
+    function displayQuestion() {
+      const currentQuestion = getRandomQuestion();
+      if (!currentQuestion) return;
+      const questionElement = document.getElementById('question');
+      const optionsElement = document.getElementById('options');
+      questionElement.textContent = currentQuestion.question;
+      optionsElement.innerHTML = '';
+      currentQuestion.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
+        button.onclick = () => checkAnswer(String.fromCharCode(65 + index));
+        const li = document.createElement('li');
+        li.appendChild(button);
+        optionsElement.appendChild(li);
+      });
+    }
+
+    function checkAnswer(answer) {
+      const currentQuestion = questions[answeredQuestions[answeredQuestions.length - 1]];
+      const feedback = document.getElementById('feedback');
+      const wrongSound = document.getElementById('wrongSound');
+      const correctSound = document.getElementById('correctSound');
+      const wrongImage = document.getElementById('wrongImage');
+      if (answer === currentQuestion.answer) {
+        feedback.textContent = 'Correct!';
+        feedback.style.color = 'green';
+        // Play correct answer sound
+        correctSound.play();
+        score += 1;
+      } else {
+        feedback.textContent = 'Wrong!';
+        feedback.style.color = 'red';
+        // Vibrate the phone if supported
+        if (navigator.vibrate) {
+          navigator.vibrate([200, 100, 200]); // Vibrate pattern
+        }
+        // Play wrong answer sound
+        wrongSound.play();
+        // Show a random wrong answer image
+        const randomImageSrc = getRandomImage();
+        wrongImage.src = randomImageSrc;
+        wrongImage.style.display = 'block';
+        // Hide the image after 2 seconds
+        setTimeout(() => {
+          wrongImage.style.display = 'none';
+        }, 2000);
+      }
+      // Move to the next question after 2.5 seconds
+      setTimeout(() => {
+        feedback.textContent = '';
+        displayQuestion();
+      }, 2500);
+    }
+
+    function endGame() {
+      const container = document.querySelector('.container');
+      container.innerHTML = `<h2>Game Over</h2><p>Your score is: ${score}/${questions.length}</p>`;
+    }
+    // Start the game
+    displayQuestion();
+  </script>
+
+    <script>
+        function updateTopScore(score) {
+            const topScore = localStorage.getItem('top-jnctrivia') || 0;
+            if (score > topScore) {
+                localStorage.setItem('top-jnctrivia', score);
+            }
+            window.location.href = 'index.html';
+        }
+    </script>
+    </body>
+
+</html>
+<!-- partial -->
+  
+
+    <script>
+        function updateTopScore(score) {
+            const topScore = localStorage.getItem('top-jnctrivia') || 0;
+            if (score > topScore) {
+                localStorage.setItem('top-jnctrivia', score);
+            }
+            window.location.href = 'index.html';
+        }
+    </script>
+    </body>
+</html>

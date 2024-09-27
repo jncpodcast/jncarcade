@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - JNC Shock Collar Trivia</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ant Wars</title>
+  <style>
+    /* Basic reset and styling */
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    #game-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        width: 300px;
+        height: 600px;
+        background-color: lightgreen;
+        margin: auto;
+    }
+
+    #timer, #score, #level {
+        position: absolute;
+        bottom: 10px; /* Move to the bottom */
+        font-size: 20px;
+        color: black;
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+    #timer { left: 20px; } /* Position the timer to the left */
+    #score { right: 20px; } /* Position the score to the right */
+    #level { left: 50%; transform: translateX(-50%); } /* Center the level display at the bottom */
+
+    #game-area {
+        position: relative;
+        width: 100%;
+        height: 90%;
+        overflow: hidden;
+    }
+
+    .ant {
+        position: absolute;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        animation: crawl linear forwards;
+    }
+
+    /* Ghost Ant (smaller size and rotated) */
+    .ghost-ant {
+        width: 20px;
+        height: 20px;
+        background-image: url('https://opengameart.org/sites/default/files/walking_7.gif');
+        transform: rotate(180deg);
+    }
+
+    /* Regular Ant (same image as ghost, but larger size) */
+    .regular-ant {
+        width: 30px;
+        height: 30px;
+        background-image: url('https://opengameart.org/sites/default/files/walking_7.gif');
+        transform: rotate(180deg);
+    }
+
+    /* Carpenter Ant (rotated 90 degrees) */
+    .carpenter-ant, .flying-carpenter-ant {
+        width: 40px;
+        height: 40px;
+        background-image: url('https://i.pinimg.com/originals/30/36/e7/3036e7ec6d2d2ecbbada37f8a06dbd45.gif');
+        transform: rotate(90deg);
+    }
+
+    #start-button, #next-level-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 20px;
+        font-size: 20px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    #start-button:hover, #next-level-button:hover {
+        background-color: #0056b3;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    @keyframes crawl {
+        0% {
+            top: 0;
+        }
+        100% {
+            top: 100%;
+        }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+      <img id="top-image" src="https://static.wixstatic.com/media/7b5caa_c3fc837dfef04cf188bc5b7e04ba14d1~mv2.png" alt="Top Image" />
+      <div id="timer">Time: <span id="time-remaining">60</span>s</div>
+      <div id="score">Score: <span id="score-value">0</span></div>
+      <div id="level">Level: <span id="level-value">1</span></div>
+      <div id="game-area"></div>
+      <button id="start-button">Start Game</button>
+      <button id="next-level-button" class="hidden">Next Level</button>
+  </div>
+  
+  <script>
+    let score = 0;
+    let timeRemaining = 60;
+    let level = 1;
+    let ants = [];
+    let antTypes = ['ghost-ant', 'regular-ant', 'carpenter-ant', 'flying-carpenter-ant'];
+    let levelDuration = 60000; // 60 seconds
+
+    const gameArea = document.getElementById('game-area');
+    const timerDisplay = document.getElementById('time-remaining');
+    const scoreDisplay = document.getElementById('score-value');
+    const levelDisplay = document.getElementById('level-value');
+    const startButton = document.getElementById('start-button');
+    const nextLevelButton = document.getElementById('next-level-button'); // Next Level Button
+
+    let gamePaused = false; // Track if the game is paused between levels
+
+    // Define different levels
+    const levelSettings = [
+        { type: 'ghost-ant', speed: 6 }, // Level 1: Ghost ants only
+        { type: 'regular-ant', speed: 6 }, // Level 2: Regular ants only
+        { type: 'carpenter-ant', speed: 6 }, // Level 3: Carpenter ants only
+        { type: ['carpenter-ant', 'flying-carpenter-ant'], speed: 6 }, // Level 4: Carpenter and Flying ants
+        { type: 'ghost-ant', speed: 3 }, // Level 5: Fast ghost ants
+    ];
+
+    // Ant generation and movement
+    function spawnAnt(type, speed) {
+        if (gamePaused) return; // Don't generate ants if the game is paused
+
+        const ant = document.createElement('div');
+        ant.classList.add('ant', type);
+        ant.style.left = `${Math.random() * 90}%`;
+        ant.style.top = '0';
+
+        ant.style.animationDuration = `${speed}s`;
+        ant.style.animationDelay = `0s`;
+
+        // Handle both touch and click events for squishing
+        const squishHandler = (event) => {
+            event.preventDefault(); // Prevent default behavior to avoid duplicate events
+            squishAnt(ant);
+        };
+
+        ant.addEventListener('touchstart', squishHandler);
+        ant.addEventListener('click', squishHandler);
+
+        gameArea.appendChild(ant);
+        ants.push(ant);
+    }
+
+    // Squish ant function
+    function squishAnt(ant) {
+        // Check if the ant has already been squished to prevent duplicate handling
+        if (ant.classList.contains('squished')) return;
+        ant.classList.add('squished');
+
+        score += 10;
+        scoreDisplay.innerText = score;
+
+        // Stop the movement and change to squished image
+        ant.style.animationPlayState = 'paused';
+
+        // Replace the ant with the squished image
+        const squishedImageUrl = 'https://static.wixstatic.com/media/7b5caa_41c47076103b4288b8efa441bc66a7e8~mv2.png';
+        ant.style.backgroundImage = `url('${squishedImageUrl}')`;
+        ant.style.backgroundSize = 'contain';
+        ant.style.transform = ''; // Remove any rotation for the squished image
+
+        // Adjust size of the squished ant relative to the original size
+        const antWidth = ant.offsetWidth;
+        ant.style.width = `${antWidth}px`; // Keep size the same
+
+        // Remove the ant after a short delay
+        setTimeout(() => {
+            ant.remove();
+            ants = ants.filter(a => a !== ant);
+        }, 1000);
+    }
+
+    // Generate ants for the current level
+    function generateAnts() {
+        if (gamePaused) return; // Don't generate ants if the game is paused
+
+        const currentLevel = levelSettings[level - 1] || { type: antTypes, speed: Math.random() * 3 + 3 };
+        const antTypesForLevel = Array.isArray(currentLevel.type) ? currentLevel.type : [currentLevel.type];
+
+        const randomAntType = antTypesForLevel[Math.floor(Math.random() * antTypesForLevel.length)];
+        spawnAnt(randomAntType, currentLevel.speed);
+
+        setTimeout(generateAnts, Math.random() * 1500 + 500);
+    }
+
+    // Timer and game loop
+    function startGame() {
+        startButton.classList.add('hidden');
+        nextLevelButton.classList.add('hidden');
+        gamePaused = false; // Unpause the game when starting
+
+        // Reset timer and score if starting a new game
+        if (level === 1 && score === 0) {
+            timeRemaining = 60;
+        }
+
+        timerDisplay.innerText = timeRemaining;
+        scoreDisplay.innerText = score;
+
+        const gameInterval = setInterval(() => {
+            if (gamePaused) return; // Pause the timer if the game is paused
+
+            timeRemaining--;
+            timerDisplay.innerText = timeRemaining;
+
+            if (timeRemaining <= 0) {
+                clearInterval(gameInterval);
+                endLevel();
+            }
+        }, 1000);
+
+        generateAnts(); // Start generating ants for the current level
+    }
+
+    // End current level and show next level button
+    function endLevel() {
+        gamePaused = true; // Pause the game at the end of the level
+
+        // Stop generating new ants and clear existing ants
+        ants.forEach(ant => ant.remove());
+        ants = [];
+
+        // Show Next Level button
+        nextLevelButton.classList.remove('hidden');
+    }
+
+    // Proceed to the next level
+    function nextLevel() {
+        level++;
+        levelDisplay.innerText = level;
+        timeRemaining = 60; // Reset time for the next level, but keep score
+        startGame(); // Start the next level
+    }
+
+    // Start game button click handler
+    startButton.addEventListener('click', () => {
+        timeRemaining = 60;
+        score = 0; // Reset score when starting a new game
+        scoreDisplay.innerText = score;
+        startGame();
+    });
+
+    // Next level button click handler
+    nextLevelButton.addEventListener('click', nextLevel);
+
+    // Optional: Allow restarting the game after all levels
+    // You can implement this based on your game design
+  </script>
+
+    <script>
+        function updateTopScore(score) {
+            const topScore = localStorage.getItem('top-ants') || 0;
+            if (score > topScore) {
+                localStorage.setItem('top-ants', score);
+            }
+            window.location.href = 'index.html';
+        }
+    </script>
+    </body>
+</html>
+<!-- partial -->
+  
+
+    <script>
+        function updateTopScore(score) {
+            const topScore = localStorage.getItem('top-ants') || 0;
+            if (score > topScore) {
+                localStorage.setItem('top-ants', score);
+            }
+            window.location.href = 'index.html';
+        }
+    </script>
+    </body>
+</html>

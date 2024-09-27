@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Derek&#39;s Cake Hole</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Birthday Cakes</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000036;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        #gameContainer {
+            position: relative;
+            width: 300px;  /* Fixed width */
+            height: 600px; /* Fixed height */
+            background-color: #000036;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('https://static.wixstatic.com/media/7b5caa_37303ee2e42f48f79a11580bdd001242~mv2.jpg');
+            background-size: cover;
+            overflow: hidden;
+        }
+        #gameCanvas {
+            display: block;
+            width: 300px;  /* Match container width */
+            height: 600px; /* Match container height */
+        }
+        #startButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #f04;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 10;
+            position: absolute;
+        }
+        #startButton:hover {
+            background-color: #c03;
+        }
+        #scoreDisplay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            color: #fff;
+            z-index: 10;
+            display: none;
+        }
+        #finalScore {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #fff;
+            z-index: 10;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="scoreDisplay">Score: 0</div>
+        <div id="finalScore"></div>
+        <button id="startButton">Start Game</button>
+        <canvas id="gameCanvas" width="300" height="600"></canvas>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('gameContainer');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const finalScore = document.getElementById('finalScore');
+
+        let tray, cakes, score, speed, gameInterval, trayShrinkInterval, createCakeInterval;
+
+        function initializeGame() {
+            tray = {
+                width: 100,
+                height: 20,
+                x: canvas.width / 2 - 50,
+                y: canvas.height - 30,
+                image: new Image(),
+                shrinkRate: 0.5
+            };
+            tray.image.src = 'https://static.wixstatic.com/media/7b5caa_d32c736d7c5f46ebb73b049791adae2f~mv2.png';
+
+            cakes = [];
+            score = 0;
+            speed = 2;
+
+            finalScore.style.display = 'none';
+            startButton.style.display = 'none';
+            canvas.style.display = 'block';
+            scoreDisplay.style.display = 'block';
+            gameContainer.style.backgroundImage = 'url("https://static.wixstatic.com/media/7b5caa_a4eac7cad1644fbeba57b42bdd1a287d~mv2.jpg")';
+
+            document.addEventListener('mousemove', moveTray);
+            document.addEventListener('touchmove', moveTrayTouch, { passive: false });
+
+            createCakeInterval = setInterval(createCake, 2000); // Start with fewer cakes
+            trayShrinkInterval = setInterval(shrinkTray, 1000); // Shrink the tray every 1 second
+
+            gameLoop();
+        }
+
+        function drawTray() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tray.image, tray.x, tray.y, tray.width, tray.height);
+        }
+
+        function createCake() {
+            const cakeImage = new Image();
+            cakeImage.src = 'https://cdn-icons-png.flaticon.com/512/9123/9123699.png';
+
+            const cake = {
+                x: Math.random() * (canvas.width - 50),
+                y: 0,
+                width: 50,
+                height: 50,  // Maintain consistent size
+                speed: speed,
+                image: cakeImage
+            };
+            cakes.push(cake);
+
+            // Increase cake speed and frequency over time
+            speed += 0.05;
+            clearInterval(createCakeInterval);
+            createCakeInterval = setInterval(createCake, Math.max(1000, 2000 - score * 100)); // Adjusted to reduce sudden speed increases
+        }
+
+        function drawCakes() {
+            cakes.forEach(cake => {
+                ctx.drawImage(cake.image, cake.x, cake.y, cake.width, cake.height);
+            });
+        }
+
+        function updateCakes() {
+            cakes.forEach((cake, index) => {
+                cake.y += cake.speed;
+
+                // Check for collision with tray
+                if (
+                    cake.y + cake.height >= tray.y &&
+                    cake.x + cake.width >= tray.x &&
+                    cake.x <= tray.x + tray.width
+                ) {
+                    score++;
+                    scoreDisplay.innerText = `Score: ${score}`;
+                    cakes.splice(index, 1);
+                }
+
+                // Remove cake if it falls off the screen
+                if (cake.y > canvas.height) {
+                    endGame();
+                }
+            });
+        }
+
+        function shrinkTray() {
+            // Shrink the tray width, but not below 30px
+            tray.width = Math.max(30, tray.width - tray.shrinkRate);
+        }
+
+        function resetGame() {
+            clearInterval(gameInterval);
+            clearInterval(trayShrinkInterval);
+            clearInterval(createCakeInterval);
+            cakes.length = 0;
+            speed = 2;
+            tray.width = 100; // Reset tray size
+            scoreDisplay.style.display = 'none';
+            startButton.style.display = 'block';
+            canvas.style.display = 'none';
+            gameContainer.style.backgroundImage = 'url("https://static.wixstatic.com/media/7b5caa_37303ee2e42f48f79a11580bdd001242~mv2.jpg")';
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            clearInterval(trayShrinkInterval);
+            clearInterval(createCakeInterval);
+            gameContainer.style.backgroundImage = 'url("https://static.wixstatic.com/media/7b5caa_d407e548b8a04074bf4cc8888621ac42~mv2.jpg")';
+            finalScore.innerText = `Final Score: ${score}`;
+            finalScore.style.display = 'block';
+            setTimeout(resetGame, 2000); // Wait 2 seconds before resetting
+        }
+
+        function moveTray(event) {
+            const rect = canvas.getBoundingClientRect();
+            tray.x = event.clientX - rect.left - tray.width / 2;
+
+            if (tray.x < 0) tray.x = 0;
+            if (tray.x > canvas.width - tray.width) tray.x = canvas.width - tray.width;
+        }
+
+        function moveTrayTouch(event) {
+            event.preventDefault();
+            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            tray.x = touch.clientX - rect.left - tray.width / 2;
+
+            if (tray.x < 0) tray.x = 0;
+            if (tray.x > canvas.width - tray.width) tray.x = canvas.width - tray.width;
+        }
+
+        function gameLoop() {
+            if (score === undefined) return;
+
+            drawTray();
+            drawCakes();
+            updateCakes();
+            requestAnimationFrame(gameLoop);
+        }
+
+        startButton.addEventListener('click', initializeGame);
+    </script>
+
+    <script>
+        function updateTopScore(score) {
+            const topScore = localStorage.getItem('top-cakehole') || 0;
+            if (score > topScore) {
+                localStorage.setItem('top-cakehole', score);
+            }
+            window.location.href = 'index.html';
+        }
+    </script>
+    </body>
+</html>
+<!-- partial -->
+  
+
+    <script>
+        function updateTopScore(score) {
+            const topScore = localStorage.getItem('top-cakehole') || 0;
+            if (score > topScore) {
+                localStorage.setItem('top-cakehole', score);
+            }
+            window.location.href = 'index.html';
+        }
+    </script>
+    </body>
+</html>
