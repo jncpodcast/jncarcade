@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - JNC Shock Collar Trivia</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jordy's Carnival</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000036;
+            font-family: Arial, sans-serif;
+        }
+        #gameContainer {
+            position: relative;
+            width: 300px;
+            height: 600px;
+            background-image: url('https://static.wixstatic.com/media/7b5caa_f4339a6646f04b9293753b555a87c2a5~mv2.jpg');
+            background-size: cover;
+            background-position: center;
+            border: 0px solid #fff;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+        }
+        #dunkGif {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 2;
+        }
+        #score, #instructions {
+            position: absolute;
+            z-index: 3;
+            color: red; /* Changed to red */
+        }
+        #score {
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            text-align: left;
+        }
+        #instructions {
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            text-align: center;
+            width: 100%;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="300" height="600"></canvas>
+        <img id="dunkGif" src="https://static.wixstatic.com/media/7b5caa_2247e0ad7f384415a3703bd8ddad11b5~mv2.gif" alt="Dunk GIF">
+        <div id="score">Score: 0</div>
+        <div id="instructions">Click to try again</div>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const dunkGif = document.getElementById('dunkGif');
+        const scoreElement = document.getElementById('score');
+        const instructions = document.getElementById('instructions');
+
+        const target = {
+            x: Math.random() * (canvas.width - 100),
+            y: Math.random() * (canvas.height - 100),
+            radius: 40,
+            hit: false
+        };
+
+        let score = 0;
+        let gamePaused = false;
+        let intervalTime = 2000; // Initial interval time for target movement
+        let intervalId;
+
+        // Start the game loop
+        startGame();
+
+        function startGame() {
+            intervalId = setInterval(() => {
+                if (!gamePaused && !target.hit) {
+                    resetTarget();
+                    updateGame();
+                }
+            }, intervalTime);
+
+            updateGame();
+        }
+
+        canvas.addEventListener('click', handleClick);
+        dunkGif.addEventListener('click', handleClick);
+
+        function handleClick(event) {
+            if (gamePaused) {
+                gamePaused = false;
+                dunkGif.style.display = 'none'; // Hide the GIF
+                canvas.style.display = 'block'; // Show the canvas
+                instructions.style.display = 'none'; // Hide instructions
+                resetTarget();
+                increaseDifficulty(); // Make the target harder to hit after each score
+                updateGame();
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+
+            const dist = Math.sqrt((clickX - target.x) ** 2 + (clickY - target.y) ** 2);
+
+            if (dist < target.radius) {
+                target.hit = true;
+                score++;
+                scoreElement.textContent = `Score: ${score}`;
+                gamePaused = true;
+                showGif(); // Show the animated GIF
+            }
+        }
+
+        function drawTarget() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before drawing
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2, false);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, target.radius - 10, 0, Math.PI * 2, false);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, target.radius - 20, 0, Math.PI * 2, false);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, target.radius - 30, 0, Math.PI * 2, false);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function resetTarget() {
+            target.hit = false;
+            target.x = Math.random() * (canvas.width - 2 * target.radius) + target.radius;
+            target.y = Math.random() * (canvas.height - 2 * target.radius) + target.radius;
+        }
+
+        function showGif() {
+            canvas.style.display = 'none'; // Hide the canvas
+            dunkGif.style.display = 'block'; // Show the GIF
+            instructions.style.display = 'block'; // Show instructions
+        }
+
+        function updateGame() {
+            if (gamePaused) return;
+
+            drawTarget();
+
+            requestAnimationFrame(updateGame);
+        }
+
+        function increaseDifficulty() {
+            clearInterval(intervalId);
+            intervalTime *= 0.9; // Increase speed by reducing interval time by 10%
+            target.radius *= 0.9; // Reduce target size by 10%
+            if (target.radius < 10) {
+                target.radius = 10; // Set a minimum target size to ensure it's always hittable
+            }
+            intervalId = setInterval(() => {
+                if (!gamePaused && !target.hit) {
+                    resetTarget();
+                    updateGame();
+                }
+            }, intervalTime);
+        }
+    </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
