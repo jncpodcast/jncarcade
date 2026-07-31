@@ -1,263 +1,1287 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>CodePen - Derek&#39;s Cake Hole</title>
-  
-
-</head>
-<body>
-<!-- partial:index.partial.html -->
-<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catch the Birthday Cakes</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000036;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-        #gameContainer {
-            position: relative;
-            width: 300px;  /* Fixed width */
-            height: 600px; /* Fixed height */
-            background-color: #000036;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: url('https://static.wixstatic.com/media/7b5caa_37303ee2e42f48f79a11580bdd001242~mv2.jpg');
-            background-size: cover;
-            overflow: hidden;
-        }
-        #gameCanvas {
-            display: block;
-            width: 300px;  /* Match container width */
-            height: 600px; /* Match container height */
-        }
-        #startButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #f04;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 10;
-            position: absolute;
-        }
-        #startButton:hover {
-            background-color: #c03;
-        }
-        #scoreDisplay {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 18px;
-            color: #fff;
-            z-index: 10;
-            display: none;
-        }
-        #finalScore {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: #fff;
-            z-index: 10;
-            display: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#070629">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Derek's Cake Hole — Deluxe Remaster v5.6</title>
+<style>
+  :root {
+    --game-w: 300;
+    --game-h: 600;
+    --pink: #ff3d74;
+    --pink-dark: #b81448;
+    --yellow: #ffe44f;
+    --blue: #6b74ff;
+    --ink: #070629;
+    --glass: rgba(7, 6, 41, .72);
+    --white: #fffdf7;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background:
+      radial-gradient(circle at 50% 18%, #35358b 0, #12114d 38%, #05051e 76%, #02020d 100%);
+    color: var(--white);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  button { font: inherit; }
+
+  #app {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    padding:
+      calc(8px + var(--safe-top))
+      calc(8px + var(--safe-right))
+      calc(8px + var(--safe-bottom))
+      calc(8px + var(--safe-left));
+    background:
+      radial-gradient(ellipse at center, rgba(96, 92, 255, .17), rgba(0, 0, 0, 0) 58%),
+      linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.32));
+  }
+
+  #app::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .12;
+    background-image:
+      linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(circle at center, black, transparent 82%);
+  }
+
+  #stageWrap {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 300px;
+    height: 600px;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center;
+    will-change: transform;
+  }
+
+  #stage {
+    position: relative;
+    width: 300px;
+    height: 600px;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 18px;
+    outline: 1px solid rgba(255,255,255,.16);
+    box-shadow:
+      0 25px 70px rgba(0,0,0,.58),
+      inset 0 0 0 1px rgba(255,255,255,.05);
+    background-color: #06052d;
+    background-image: url('https://static.wixstatic.com/media/7b5caa_37303ee2e42f48f79a11580bdd001242~mv2.jpg');
+    background-size: cover;
+    background-position: center;
+    touch-action: none;
+  }
+
+  #stage::before,
+  #stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  #stage::before {
+    z-index: 2;
+    background:
+      linear-gradient(180deg, rgba(3,3,30,.04), rgba(3,3,30,.14) 60%, rgba(3,3,30,.36)),
+      radial-gradient(circle at 50% 18%, rgba(255,255,255,.12), transparent 34%);
+  }
+
+  #stage::after {
+    z-index: 8;
+    opacity: .12;
+    mix-blend-mode: soft-light;
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(255,255,255,.18) 0,
+      rgba(255,255,255,.18) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  }
+
+  #gameCanvas {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: block;
+    width: 300px;
+    height: 600px;
+    touch-action: none;
+  }
+
+  .topbar {
+    position: absolute;
+    z-index: 6;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    height: 42px;
+    display: none;
+    align-items: stretch;
+    gap: 6px;
+    pointer-events: none;
+  }
+
+  .hud-card,
+  .icon-btn {
+    border: 1px solid rgba(255,255,255,.19);
+    background: linear-gradient(180deg, rgba(13,12,55,.88), rgba(5,5,32,.75));
+    box-shadow: 0 7px 17px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .hud-card {
+    flex: 1;
+    min-width: 0;
+    border-radius: 11px;
+    padding: 5px 8px 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hud-label {
+    color: rgba(255,255,255,.68);
+    font: 800 7px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+  }
+
+  .hud-value {
+    margin-top: 3px;
+    color: #fff;
+    font: 1000 15px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 8px rgba(0,0,0,.5);
+  }
+
+  .hud-value.small { font-size: 12px; }
+
+  .icon-btn {
+    pointer-events: auto;
+    width: 42px;
+    min-width: 42px;
+    border-radius: 11px;
+    color: white;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .icon-btn:active { transform: translateY(1px); }
+
+  #toast {
+    position: absolute;
+    z-index: 7;
+    left: 50%;
+    top: 76px;
+    transform: translate(-50%, -8px) scale(.94);
+    min-width: 130px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    text-align: center;
+    color: #08072d;
+    background: linear-gradient(180deg, #fff78d, #ffd73c);
+    box-shadow: 0 8px 24px rgba(0,0,0,.32);
+    font: 1000 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: .5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+
+  #toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  #dragHint {
+    position: absolute;
+    z-index: 6;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 270px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    color: rgba(255,255,255,.9);
+    background: rgba(5,5,33,.63);
+    border: 1px solid rgba(255,255,255,.15);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    font: 800 9px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: .25px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .28s ease;
+  }
+
+  #dragHint.show { opacity: 1; }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background:
+      radial-gradient(circle at 50% 35%, rgba(255,61,116,.20), transparent 42%),
+      linear-gradient(180deg, rgba(3,3,24,.26), rgba(3,3,24,.74));
+  }
+
+  .screen.active { display: flex; }
+
+  .panel {
+    width: 100%;
+    max-width: 260px;
+    padding: 18px 16px 16px;
+    border-radius: 18px;
+    text-align: center;
+    background:
+      linear-gradient(180deg, rgba(24,22,85,.92), rgba(6,5,38,.9));
+    border: 1px solid rgba(255,255,255,.20);
+    box-shadow:
+      0 20px 50px rgba(0,0,0,.54),
+      inset 0 1px 0 rgba(255,255,255,.10);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    animation: panelIn .26s ease-out both;
+  }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(8px) scale(.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .eyebrow {
+    color: var(--yellow);
+    font: 900 8px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+  }
+
+  h1, h2, p { margin: 0; }
+
+  .game-title {
+    margin-top: 8px;
+    color: #fff;
+    font-size: 26px;
+    line-height: .96;
+    font-weight: 1000;
+    letter-spacing: -1.4px;
+    text-transform: uppercase;
+    text-shadow:
+      0 3px 0 #7e143d,
+      0 8px 22px rgba(0,0,0,.52);
+  }
+
+  .game-title span { color: var(--pink); }
+
+  .copy {
+    margin: 12px auto 14px;
+    max-width: 220px;
+    color: rgba(255,255,255,.82);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .difficulty {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin: 0 0 12px;
+  }
+
+  .difficulty button {
+    min-height: 36px;
+    padding: 6px 3px;
+    border-radius: 9px;
+    color: rgba(255,255,255,.72);
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    cursor: pointer;
+    font: 900 8px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    text-transform: uppercase;
+  }
+
+  .difficulty button.selected {
+    color: #09072e;
+    background: linear-gradient(180deg, #fff98c, #ffd83b);
+    border-color: rgba(255,255,255,.6);
+    box-shadow: 0 5px 15px rgba(255,216,59,.26);
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+    min-height: 43px;
+    border: 0;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    font-weight: 1000;
+    font-size: 12px;
+    letter-spacing: .25px;
+  }
+
+  .primary-btn {
+    background: linear-gradient(180deg, var(--pink), var(--pink-dark));
+    box-shadow: 0 10px 24px rgba(255,61,116,.32), inset 0 1px 0 rgba(255,255,255,.22);
+  }
+
+  .secondary-btn {
+    margin-top: 7px;
+    background: linear-gradient(180deg, #6f78ff, #3e46bd);
+    box-shadow: 0 10px 24px rgba(90,99,255,.24), inset 0 1px 0 rgba(255,255,255,.18);
+  }
+
+  .primary-btn:active,
+  .secondary-btn:active { transform: translateY(1px) scale(.995); }
+
+  .microcopy {
+    margin-top: 9px;
+    color: rgba(255,255,255,.5);
+    font: 700 7px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 13px 0;
+  }
+
+  .stat {
+    padding: 9px 7px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.23);
+    border: 1px solid rgba(255,255,255,.11);
+  }
+
+  .stat span {
+    display: block;
+    color: rgba(255,255,255,.57);
+    font: 800 7px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+  }
+
+  .stat strong {
+    display: block;
+    margin-top: 5px;
+    color: #fff;
+    font: 1000 18px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  #countdownScreen {
+    background: rgba(4,4,29,.28);
+    pointer-events: none;
+  }
+
+  #countdownNumber {
+    font: 1000 92px/.9 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--yellow);
+    text-shadow:
+      0 5px 0 #bb6b00,
+      0 12px 35px rgba(0,0,0,.55);
+    animation: countPop .7s ease-out both;
+  }
+
+  @keyframes countPop {
+    from { transform: scale(.5); opacity: 0; }
+    35% { transform: scale(1.12); opacity: 1; }
+    to { transform: scale(.9); opacity: .15; }
+  }
+
+  .danger-vignette {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .25s ease;
+    background: radial-gradient(circle at center, transparent 55%, rgba(255,25,70,.38) 100%);
+  }
+
+  .danger-vignette.show { opacity: 1; }
+
+  #stage.shake { animation: shake .28s linear both; }
+
+  @keyframes shake {
+    0%,100% { transform: translate(0,0); }
+    20% { transform: translate(-4px,2px); }
+    40% { transform: translate(4px,-2px); }
+    60% { transform: translate(-3px,-1px); }
+    80% { transform: translate(3px,2px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
+</style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="scoreDisplay">Score: 0</div>
-        <div id="finalScore"></div>
-        <button id="startButton">Start Game</button>
-        <canvas id="gameCanvas" width="300" height="600"></canvas>
-    </div>
+<div id="app">
+  <div id="stageWrap">
+    <main id="stage" aria-label="Derek's Cake Hole">
+      <canvas id="gameCanvas" width="300" height="600"></canvas>
 
-    <script>
-        const gameContainer = document.getElementById('gameContainer');
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const startButton = document.getElementById('startButton');
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const finalScore = document.getElementById('finalScore');
+      <div class="topbar" id="topbar">
+        <div class="hud-card">
+          <span class="hud-label">Score</span>
+          <strong class="hud-value" id="scoreValue">000</strong>
+        </div>
+        <div class="hud-card">
+          <span class="hud-label">Best</span>
+          <strong class="hud-value small" id="bestValue">000</strong>
+        </div>
+        <div class="hud-card">
+          <span class="hud-label">Level</span>
+          <strong class="hud-value small" id="levelValue">1</strong>
+        </div>
+        <button class="icon-btn" id="soundBtn" type="button" aria-label="Toggle sound">🔊</button>
+        <button class="icon-btn" id="pauseBtn" type="button" aria-label="Pause game">Ⅱ</button>
+      </div>
 
-        let tray, cakes, score, speed, gameInterval, trayShrinkInterval, createCakeInterval;
+      <div id="toast">LEVEL 2</div>
+      <div id="dragHint">DRAG ANYWHERE · OR USE ← →</div>
+      <div class="danger-vignette" id="dangerVignette"></div>
 
-        function initializeGame() {
-            tray = {
-                width: 100,
-                height: 20,
-                x: canvas.width / 2 - 50,
-                y: canvas.height - 30,
-                image: new Image(),
-                shrinkRate: 0.5
-            };
-            tray.image.src = 'https://static.wixstatic.com/media/7b5caa_d32c736d7c5f46ebb73b049791adae2f~mv2.png';
+      <section class="screen active" id="menuScreen">
+        <div class="panel">
+          <div class="eyebrow">JNC Arcade · Deluxe Remaster</div>
+          <h1 class="game-title">Derek’s<br><span>Cake Hole</span></h1>
+          <p class="copy">Catch every falling cake. Miss one and Derek’s birthday is ruined forever.</p>
 
-            cakes = [];
-            score = 0;
-            speed = 2;
+          <div class="difficulty" aria-label="Difficulty">
+            <button type="button" data-difficulty="easy">Easy</button>
+            <button type="button" data-difficulty="normal" class="selected">Normal</button>
+            <button type="button" data-difficulty="hard">Hard</button>
+          </div>
 
-            finalScore.style.display = 'none';
-            startButton.style.display = 'none';
-            canvas.style.display = 'block';
-            scoreDisplay.style.display = 'block';
-            gameContainer.style.backgroundImage = 'url("https://static.wixstatic.com/media/7b5caa_a4eac7cad1644fbeba57b42bdd1a287d~mv2.jpg")';
+          <button class="primary-btn" id="startBtn" type="button">LET’S GO!</button>
+          <div class="microcopy">Safari stays centered in-browser. Fullscreen is attempted on supported Chrome and Android devices.</div>
+        </div>
+      </section>
 
-            document.addEventListener('mousemove', moveTray);
-            document.addEventListener('touchmove', moveTrayTouch, { passive: false });
+      <section class="screen" id="countdownScreen">
+        <div id="countdownNumber">3</div>
+      </section>
 
-            createCakeInterval = setInterval(createCake, 2000); // Start with fewer cakes
-            trayShrinkInterval = setInterval(shrinkTray, 1000); // Shrink the tray every 1 second
+      <section class="screen" id="pauseScreen">
+        <div class="panel">
+          <div class="eyebrow">Game Paused</div>
+          <h2 class="game-title" style="font-size:24px">CAKE BREAK</h2>
+          <p class="copy">Your cake is frozen in midair. Very scientific.</p>
+          <button class="primary-btn" id="resumeBtn" type="button">RESUME</button>
+          <button class="secondary-btn" id="pauseMenuBtn" type="button">MAIN MENU</button>
+        </div>
+      </section>
 
-            gameLoop();
-        }
+      <section class="screen" id="gameOverScreen">
+        <div class="panel">
+          <div class="eyebrow">Cake Down!</div>
+          <h2 class="game-title" style="font-size:25px">SPLASH!</h2>
+          <div class="stats">
+            <div class="stat"><span>Score</span><strong id="finalScore">0</strong></div>
+            <div class="stat"><span>Best</span><strong id="finalBest">0</strong></div>
+            <div class="stat"><span>Caught</span><strong id="finalCaught">0</strong></div>
+            <div class="stat"><span>Time</span><strong id="finalTime">0s</strong></div>
+          </div>
+          <button class="primary-btn" id="againBtn" type="button">PLAY AGAIN</button>
+          <button class="secondary-btn" id="menuBtn" type="button">MAIN MENU</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
 
-        function drawTray() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(tray.image, tray.x, tray.y, tray.width, tray.height);
-        }
+<script>
+(() => {
+  'use strict';
 
-        function createCake() {
-            const cakeImage = new Image();
-            cakeImage.src = 'https://cdn-icons-png.flaticon.com/512/9123/9123699.png';
+  const W = 300;
+  const H = 600;
+  const userAgent = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = (
+    /Safari/i.test(userAgent) &&
+    !/(Chrome|CriOS|Chromium|Edg|EdgiOS|OPR|OPiOS|FxiOS|Firefox|Android)/i.test(userAgent)
+  ) || (isIOS && !/(CriOS|FxiOS|EdgiOS|OPiOS)/i.test(userAgent));
+  const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
-            const cake = {
-                x: Math.random() * (canvas.width - 50),
-                y: 0,
-                width: 50,
-                height: 50,  // Maintain consistent size
-                speed: speed,
-                image: cakeImage
-            };
-            cakes.push(cake);
+  const ASSETS = {
+    menu: 'https://static.wixstatic.com/media/7b5caa_37303ee2e42f48f79a11580bdd001242~mv2.jpg',
+    play: 'https://static.wixstatic.com/media/7b5caa_a4eac7cad1644fbeba57b42bdd1a287d~mv2.jpg',
+    over: 'https://static.wixstatic.com/media/7b5caa_d407e548b8a04074bf4cc8888621ac42~mv2.jpg',
+    tray: 'https://static.wixstatic.com/media/7b5caa_d32c736d7c5f46ebb73b049791adae2f~mv2.png',
+    cake: 'https://cdn-icons-png.flaticon.com/512/9123/9123699.png'
+  };
 
-            // Increase cake speed and frequency over time
-            speed += 0.05;
-            clearInterval(createCakeInterval);
-            createCakeInterval = setInterval(createCake, Math.max(1000, 2000 - score * 100)); // Adjusted to reduce sudden speed increases
-        }
+  const DIFFICULTIES = {
+    easy:   { tray: 118, minTray: 48, shrink: 1.65, speed: 126, spawn: 1430, label: 'Easy' },
+    normal: { tray: 104, minTray: 38, shrink: 2.35, speed: 145, spawn: 1260, label: 'Normal' },
+    hard:   { tray: 92,  minTray: 32, shrink: 3.05, speed: 164, spawn: 1110, label: 'Hard' }
+  };
 
-        function drawCakes() {
-            cakes.forEach(cake => {
-                ctx.drawImage(cake.image, cake.x, cake.y, cake.width, cake.height);
-            });
-        }
+  const app = document.getElementById('app');
+  const stageWrap = document.getElementById('stageWrap');
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
 
-        function updateCakes() {
-            cakes.forEach((cake, index) => {
-                cake.y += cake.speed;
+  const topbar = document.getElementById('topbar');
+  const scoreValue = document.getElementById('scoreValue');
+  const bestValue = document.getElementById('bestValue');
+  const levelValue = document.getElementById('levelValue');
+  const toast = document.getElementById('toast');
+  const dragHint = document.getElementById('dragHint');
+  const dangerVignette = document.getElementById('dangerVignette');
 
-                // Check for collision with tray
-                if (
-                    cake.y + cake.height >= tray.y &&
-                    cake.x + cake.width >= tray.x &&
-                    cake.x <= tray.x + tray.width
-                ) {
-                    score++;
-                    scoreDisplay.innerText = `Score: ${score}`;
-                    cakes.splice(index, 1);
-                }
+  const menuScreen = document.getElementById('menuScreen');
+  const countdownScreen = document.getElementById('countdownScreen');
+  const countdownNumber = document.getElementById('countdownNumber');
+  const pauseScreen = document.getElementById('pauseScreen');
+  const gameOverScreen = document.getElementById('gameOverScreen');
 
-                // Remove cake if it falls off the screen
-                if (cake.y > canvas.height) {
-                    endGame();
-                }
-            });
-        }
+  const startBtn = document.getElementById('startBtn');
+  const soundBtn = document.getElementById('soundBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const pauseMenuBtn = document.getElementById('pauseMenuBtn');
+  const againBtn = document.getElementById('againBtn');
+  const menuBtn = document.getElementById('menuBtn');
 
-        function shrinkTray() {
-            // Shrink the tray width, but not below 30px
-            tray.width = Math.max(30, tray.width - tray.shrinkRate);
-        }
+  const finalScore = document.getElementById('finalScore');
+  const finalBest = document.getElementById('finalBest');
+  const finalCaught = document.getElementById('finalCaught');
+  const finalTime = document.getElementById('finalTime');
 
-        function resetGame() {
-            clearInterval(gameInterval);
-            clearInterval(trayShrinkInterval);
-            clearInterval(createCakeInterval);
-            cakes.length = 0;
-            speed = 2;
-            tray.width = 100; // Reset tray size
-            scoreDisplay.style.display = 'none';
-            startButton.style.display = 'block';
-            canvas.style.display = 'none';
-            gameContainer.style.backgroundImage = 'url("https://static.wixstatic.com/media/7b5caa_37303ee2e42f48f79a11580bdd001242~mv2.jpg")';
-        }
+  const trayImg = new Image();
+  const cakeImg = new Image();
+  trayImg.decoding = 'async';
+  cakeImg.decoding = 'async';
+  trayImg.src = ASSETS.tray;
+  cakeImg.src = ASSETS.cake;
 
-        function endGame() {
-            clearInterval(gameInterval);
-            clearInterval(trayShrinkInterval);
-            clearInterval(createCakeInterval);
-            gameContainer.style.backgroundImage = 'url("https://static.wixstatic.com/media/7b5caa_d407e548b8a04074bf4cc8888621ac42~mv2.jpg")';
-            finalScore.innerText = `Final Score: ${score}`;
-            finalScore.style.display = 'block';
-            setTimeout(resetGame, 2000); // Wait 2 seconds before resetting
-        }
+  const DPR = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  canvas.width = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  canvas.style.width = `${W}px`;
+  canvas.style.height = `${H}px`;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
 
-        function moveTray(event) {
-            const rect = canvas.getBoundingClientRect();
-            tray.x = event.clientX - rect.left - tray.width / 2;
+  let state = 'menu';
+  let difficulty = loadString('dch-difficulty', 'normal');
+  if (!DIFFICULTIES[difficulty]) difficulty = 'normal';
 
-            if (tray.x < 0) tray.x = 0;
-            if (tray.x > canvas.width - tray.width) tray.x = canvas.width - tray.width;
-        }
+  let soundOn = loadString('dch-sound', 'on') !== 'off';
+  let audioCtx = null;
+  let rafId = 0;
+  let lastTime = 0;
+  let runStart = 0;
+  let pausedAt = 0;
+  let pausedDuration = 0;
+  let score = 0;
+  let caught = 0;
+  let level = 1;
+  let cakes = [];
+  let particles = [];
+  let spawnClock = 0;
+  let targetX = W / 2;
+  let trayCenterX = W / 2;
+  let activePointer = null;
+  let hintDeadline = 0;
+  let toastTimer = 0;
+  let countdownToken = 0;
+  let fullscreenActiveByUs = false;
+  let CSSImmersive = false;
+  let keyLeft = false;
+  let keyRight = false;
 
-        function moveTrayTouch(event) {
-            event.preventDefault();
-            const touch = event.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            tray.x = touch.clientX - rect.left - tray.width / 2;
+  const tray = { x: 98, y: 558, w: 104, h: 25, minW: 38 };
 
-            if (tray.x < 0) tray.x = 0;
-            if (tray.x > canvas.width - tray.width) tray.x = canvas.width - tray.width;
-        }
+  function loadString(key, fallback) {
+    try { return localStorage.getItem(key) ?? fallback; }
+    catch { return fallback; }
+  }
 
-        function gameLoop() {
-            if (score === undefined) return;
+  function saveString(key, value) {
+    try { localStorage.setItem(key, String(value)); }
+    catch { /* Private mode/storage disabled. */ }
+  }
 
-            drawTray();
-            drawCakes();
-            updateCakes();
-            requestAnimationFrame(gameLoop);
-        }
+  function bestKey() { return `dch-best-${difficulty}`; }
+  function getBest() { return Number(loadString(bestKey(), '0')) || 0; }
+  function setBest(value) { saveString(bestKey(), Math.max(getBest(), value)); }
 
-        startButton.addEventListener('click', initializeGame);
-    </script>
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
 
-    <script>
-        function updateTopScore(score) {
-            const topScore = localStorage.getItem('top-cakehole') || 0;
-            if (score > topScore) {
-                localStorage.setItem('top-cakehole', score);
-            }
-            window.location.href = 'index.html';
-        }
-    </script>
-    </body>
-</html>
-<!-- partial -->
-  
+  function padScore(value) {
+    return String(Math.max(0, Math.floor(value))).padStart(3, '0');
+  }
 
-    <script>
-        function updateTopScore(score) {
-            const topScore = localStorage.getItem('top-cakehole') || 0;
-            if (score > topScore) {
-                localStorage.setItem('top-cakehole', score);
-            }
-            window.location.href = 'index.html';
-        }
-    </script>
-    </body>
+  function showOnly(screen) {
+    [menuScreen, countdownScreen, pauseScreen, gameOverScreen].forEach(el => el.classList.remove('active'));
+    if (screen) screen.classList.add('active');
+  }
+
+  function setBackground(which) {
+    const url = which === 'play' ? ASSETS.play : which === 'over' ? ASSETS.over : ASSETS.menu;
+    stage.style.backgroundImage = `url('${url}')`;
+  }
+
+  function updateDifficultyButtons() {
+    document.querySelectorAll('[data-difficulty]').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.difficulty === difficulty);
+    });
+  }
+
+  function viewportSize() {
+    const vv = window.visualViewport;
+    return {
+      width: vv?.width || window.innerWidth,
+      height: vv?.height || window.innerHeight,
+      offsetLeft: vv?.offsetLeft || 0,
+      offsetTop: vv?.offsetTop || 0
+    };
+  }
+
+  function fitStage() {
+    const { width, height, offsetLeft, offsetTop } = viewportSize();
+    const gutter = CSSImmersive ? 8 : 14;
+    const availableW = Math.max(1, width - gutter * 2);
+    const availableH = Math.max(1, height - gutter * 2);
+    const scale = Math.min(availableW / W, availableH / H);
+
+    // Center inside the browser's currently visible viewport. This matters on
+    // Safari because its collapsing toolbar can shift visualViewport.offsetTop.
+    stageWrap.style.left = `${offsetLeft + width / 2}px`;
+    stageWrap.style.top = `${offsetTop + height / 2}px`;
+    stageWrap.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  }
+
+  async function requestImmersive() {
+    // Keep Safari in the normal browser view. Its toolbar and viewport behavior
+    // are more reliable when the centered stage is allowed to remain in-page.
+    if (isSafari) {
+      CSSImmersive = false;
+      app.classList.remove('immersive');
+      fullscreenActiveByUs = false;
+      fitStage();
+      return;
+    }
+
+    CSSImmersive = true;
+    app.classList.add('immersive');
+    fitStage();
+
+    // Must be called directly from the user's tap. CSS immersive remains the fallback.
+    try {
+      if (document.fullscreenEnabled && !document.fullscreenElement && app.requestFullscreen) {
+        fullscreenActiveByUs = true;
+        await app.requestFullscreen({ navigationUI: 'hide' });
+        try { await screen.orientation?.lock?.('portrait-primary'); } catch { /* Optional. */ }
+      }
+    } catch {
+      fullscreenActiveByUs = false;
+    }
+  }
+
+  async function exitImmersive() {
+    CSSImmersive = false;
+    app.classList.remove('immersive');
+    if (document.fullscreenElement && document.exitFullscreen) {
+      try { await document.exitFullscreen(); } catch { /* Ignore. */ }
+    }
+    fullscreenActiveByUs = false;
+    fitStage();
+  }
+
+  function unlockAudio() {
+    if (!soundOn) return;
+    try {
+      audioCtx ??= new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch { audioCtx = null; }
+  }
+
+  function tone(freq, duration, type = 'square', volume = .035, slideTo = null, delay = 0) {
+    if (!soundOn || !audioCtx) return;
+    const now = audioCtx.currentTime + delay;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, now + duration);
+    gain.gain.setValueAtTime(.0001, now);
+    gain.gain.exponentialRampToValueAtTime(volume, now + .012);
+    gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + duration + .02);
+  }
+
+  function soundCatch() {
+    tone(520, .075, 'square', .028, 700);
+    tone(780, .07, 'square', .018, 960, .045);
+  }
+
+  function soundLevel() {
+    tone(440, .09, 'square', .025, 560);
+    tone(660, .10, 'square', .025, 820, .08);
+    tone(880, .14, 'square', .028, 1080, .16);
+  }
+
+  function soundLose() {
+    tone(260, .18, 'sawtooth', .035, 150);
+    tone(150, .28, 'square', .027, 70, .14);
+  }
+
+  function soundCountdown(value) {
+    tone(value === 'GO!' ? 800 : 390, value === 'GO!' ? .18 : .08, 'square', .03, value === 'GO!' ? 1100 : 470);
+  }
+
+  function vibrate(pattern) {
+    try { navigator.vibrate?.(pattern); } catch { /* Ignore. */ }
+  }
+
+  function updateSoundButton() {
+    soundBtn.textContent = soundOn ? '🔊' : '🔇';
+    soundBtn.setAttribute('aria-label', soundOn ? 'Mute sound' : 'Turn sound on');
+  }
+
+  function resetRun() {
+    const cfg = DIFFICULTIES[difficulty];
+    score = 0;
+    caught = 0;
+    level = 1;
+    cakes = [];
+    particles = [];
+    spawnClock = 620;
+    targetX = W / 2;
+    trayCenterX = W / 2;
+    tray.w = cfg.tray;
+    tray.minW = cfg.minTray;
+    tray.x = (W - tray.w) / 2;
+    activePointer = null;
+    keyLeft = false;
+    keyRight = false;
+    pausedDuration = 0;
+    pausedAt = 0;
+    lastTime = 0;
+    hintDeadline = performance.now() + 2600;
+    toastTimer = 0;
+    dangerVignette.classList.remove('show');
+    scoreValue.textContent = '000';
+    bestValue.textContent = padScore(getBest());
+    levelValue.textContent = '1';
+  }
+
+  function currentSpawnInterval() {
+    const cfg = DIFFICULTIES[difficulty];
+    const scorePressure = Math.min(caught, 55) * 17;
+    const levelPressure = (level - 1) * 18;
+    return Math.max(430, cfg.spawn - scorePressure - levelPressure);
+  }
+
+  function currentCakeSpeed() {
+    const cfg = DIFFICULTIES[difficulty];
+    return cfg.speed + Math.min(caught, 60) * 2.05 + (level - 1) * 8;
+  }
+
+  function spawnCake() {
+    const size = 43 + Math.random() * 8;
+    const x = 8 + Math.random() * (W - size - 16);
+    const drift = (Math.random() - .5) * Math.min(34, 12 + level * 3);
+    cakes.push({
+      x,
+      y: -size - 10,
+      previousY: -size - 10,
+      w: size,
+      h: size,
+      vx: drift,
+      vy: currentCakeSpeed() + Math.random() * 30,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - .5) * 2.2,
+      pulse: Math.random() * Math.PI * 2
+    });
+  }
+
+  function addBurst(x, y) {
+    const amount = prefersReducedMotion ? 3 : 10;
+    for (let i = 0; i < amount; i++) {
+      particles.push({
+        x,
+        y,
+        vx: (Math.random() - .5) * 110,
+        vy: -35 - Math.random() * 90,
+        gravity: 180 + Math.random() * 60,
+        radius: 1.5 + Math.random() * 3,
+        life: .28 + Math.random() * .25,
+        maxLife: .53,
+        kind: Math.random() < .45 ? 'spark' : 'crumb'
+      });
+    }
+  }
+
+  function updateParticles(dt) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life -= dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += p.gravity * dt;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+  }
+
+  function showToast(text, duration = 1150) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    toastTimer = duration;
+  }
+
+  function updateLevel() {
+    const nextLevel = Math.floor(caught / 10) + 1;
+    if (nextLevel <= level) return;
+    level = nextLevel;
+    levelValue.textContent = String(level);
+
+    // A tiny tray recovery keeps long runs demanding without becoming mathematically hopeless.
+    const cfg = DIFFICULTIES[difficulty];
+    tray.w = Math.min(cfg.tray, tray.w + 7);
+    showToast(`LEVEL ${level}`);
+    soundLevel();
+    vibrate([16, 30, 16]);
+  }
+
+  function catchCake(cake, index) {
+    cakes.splice(index, 1);
+    caught += 1;
+    score += 1;
+    scoreValue.textContent = padScore(score);
+    addBurst(cake.x + cake.w / 2, tray.y + 2);
+    soundCatch();
+    if (caught % 5 === 0) vibrate(10);
+    updateLevel();
+  }
+
+  function updateGame(dt, now) {
+    const cfg = DIFFICULTIES[difficulty];
+    dt = Math.min(dt, .035);
+
+    if (keyLeft) targetX -= 175 * dt;
+    if (keyRight) targetX += 175 * dt;
+    targetX = clamp(targetX, 0, W);
+
+    trayCenterX += (targetX - trayCenterX) * Math.min(1, dt * 22);
+    tray.w = Math.max(tray.minW, tray.w - cfg.shrink * dt);
+    tray.x = clamp(trayCenterX - tray.w / 2, 0, W - tray.w);
+
+    dangerVignette.classList.toggle('show', tray.w <= tray.minW + 8);
+    dragHint.classList.toggle('show', now < hintDeadline);
+
+    spawnClock += dt * 1000;
+    const spawnEvery = currentSpawnInterval();
+    if (spawnClock >= spawnEvery) {
+      spawnClock -= spawnEvery;
+      spawnCake();
+    }
+
+    for (let i = cakes.length - 1; i >= 0; i--) {
+      const cake = cakes[i];
+      cake.previousY = cake.y;
+      cake.y += cake.vy * dt;
+      cake.x += cake.vx * dt;
+      cake.angle += cake.spin * dt;
+      cake.pulse += dt * 4;
+
+      if (cake.x < 2 || cake.x + cake.w > W - 2) {
+        cake.vx *= -.72;
+        cake.x = clamp(cake.x, 2, W - cake.w - 2);
+      }
+
+      // Swept collision: catches fast cakes even when a dropped frame skips over the tray edge.
+      const previousBottom = cake.previousY + cake.h * .82;
+      const currentBottom = cake.y + cake.h * .82;
+      const trayTop = tray.y + 3;
+      const cakeCenter = cake.x + cake.w / 2;
+      const crossedTray = previousBottom <= trayTop && currentBottom >= trayTop;
+      const horizontalHit = cakeCenter >= tray.x - 5 && cakeCenter <= tray.x + tray.w + 5;
+
+      if (crossedTray && horizontalHit) {
+        catchCake(cake, i);
+        continue;
+      }
+
+      if (cake.y > H + 18) {
+        finishGame();
+        return;
+      }
+    }
+
+    updateParticles(dt);
+    if (toastTimer > 0) {
+      toastTimer -= dt * 1000;
+      if (toastTimer <= 0) toast.classList.remove('show');
+    }
+  }
+
+  function drawCake(cake) {
+    ctx.save();
+    ctx.translate(cake.x + cake.w / 2, cake.y + cake.h / 2);
+    ctx.rotate(cake.angle);
+    const pulse = 1 + Math.sin(cake.pulse) * .025;
+    ctx.scale(pulse, pulse);
+    ctx.shadowColor = 'rgba(0,0,0,.34)';
+    ctx.shadowBlur = 7;
+    ctx.shadowOffsetY = 4;
+
+    if (cakeImg.complete && cakeImg.naturalWidth) {
+      ctx.drawImage(cakeImg, -cake.w / 2, -cake.h / 2, cake.w, cake.h);
+    } else {
+      ctx.fillStyle = '#ffd85a';
+      ctx.beginPath();
+      ctx.arc(0, 0, cake.w / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawTray() {
+    const center = tray.x + tray.w / 2;
+    ctx.save();
+    const glow = ctx.createRadialGradient(center, tray.y + tray.h, 4, center, tray.y + tray.h, 62);
+    glow.addColorStop(0, 'rgba(255,255,255,.24)');
+    glow.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(tray.x - 70, tray.y - 15, tray.w + 140, 95);
+    ctx.restore();
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.35)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 4;
+    if (trayImg.complete && trayImg.naturalWidth) {
+      ctx.drawImage(trayImg, tray.x, tray.y, tray.w, tray.h);
+    } else {
+      ctx.fillStyle = '#f6f2e6';
+      ctx.fillRect(tray.x, tray.y, tray.w, tray.h);
+    }
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    ctx.save();
+    for (const p of particles) {
+      const alpha = clamp(p.life / p.maxLife, 0, 1);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = p.kind === 'spark' ? '#fff388' : '#ff7a9e';
+      if (p.kind === 'spark') {
+        ctx.fillRect(p.x - p.radius / 2, p.y - p.radius * 1.6, p.radius, p.radius * 3.2);
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    cakes.forEach(drawCake);
+    drawParticles();
+    if (state !== 'menu') drawTray();
+  }
+
+  function frameLoop(now) {
+    if (state !== 'playing') return;
+    if (!lastTime) lastTime = now;
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+    updateGame(dt, now);
+    draw();
+    if (state === 'playing') rafId = requestAnimationFrame(frameLoop);
+  }
+
+  function startLoop() {
+    cancelAnimationFrame(rafId);
+    lastTime = 0;
+    rafId = requestAnimationFrame(frameLoop);
+  }
+
+  function runCountdown() {
+    const token = ++countdownToken;
+    state = 'countdown';
+    showOnly(countdownScreen);
+    topbar.style.display = 'flex';
+    draw();
+
+    const sequence = ['3', '2', '1', 'GO!'];
+    let index = 0;
+
+    const step = () => {
+      if (token !== countdownToken || state !== 'countdown') return;
+      const value = sequence[index];
+      countdownNumber.textContent = value;
+      countdownNumber.style.fontSize = value === 'GO!' ? '58px' : '92px';
+      countdownNumber.style.animation = 'none';
+      void countdownNumber.offsetWidth;
+      countdownNumber.style.animation = 'countPop .7s ease-out both';
+      soundCountdown(value);
+      index += 1;
+
+      if (index < sequence.length) {
+        setTimeout(step, value === 'GO!' ? 350 : 700);
+      } else {
+        setTimeout(() => {
+          if (token !== countdownToken || state !== 'countdown') return;
+          showOnly(null);
+          state = 'playing';
+          runStart = performance.now();
+          lastTime = 0;
+          startLoop();
+        }, 430);
+      }
+    };
+
+    step();
+  }
+
+  function beginGame() {
+    unlockAudio();
+    resetRun();
+    setBackground('play');
+    topbar.style.display = 'flex';
+    runCountdown();
+  }
+
+  function pauseGame(fromVisibility = false) {
+    if (state !== 'playing') return;
+    cancelAnimationFrame(rafId);
+    state = 'paused';
+    pausedAt = performance.now();
+    dragHint.classList.remove('show');
+    showOnly(pauseScreen);
+    if (!fromVisibility) tone(310, .08, 'square', .018, 250);
+  }
+
+  function resumeGame() {
+    if (state !== 'paused') return;
+    unlockAudio();
+    pausedDuration += performance.now() - pausedAt;
+    showOnly(null);
+    state = 'playing';
+    lastTime = 0;
+    startLoop();
+  }
+
+  function finishGame() {
+    if (state !== 'playing') return;
+    state = 'gameover';
+    cancelAnimationFrame(rafId);
+    soundLose();
+    vibrate([45, 35, 85]);
+    stage.classList.remove('shake');
+    void stage.offsetWidth;
+    if (!prefersReducedMotion) stage.classList.add('shake');
+    setBackground('over');
+    dragHint.classList.remove('show');
+    dangerVignette.classList.remove('show');
+
+    const elapsed = Math.max(0, Math.round((performance.now() - runStart - pausedDuration) / 1000));
+    setBest(score);
+    finalScore.textContent = String(score);
+    finalBest.textContent = String(getBest());
+    finalCaught.textContent = String(caught);
+    finalTime.textContent = `${elapsed}s`;
+    bestValue.textContent = padScore(getBest());
+    showOnly(gameOverScreen);
+  }
+
+  function returnToMenu() {
+    ++countdownToken;
+    cancelAnimationFrame(rafId);
+    state = 'menu';
+    setBackground('menu');
+    cakes = [];
+    particles = [];
+    topbar.style.display = 'none';
+    dragHint.classList.remove('show');
+    dangerVignette.classList.remove('show');
+    toast.classList.remove('show');
+    showOnly(menuScreen);
+    draw();
+  }
+
+  function pointerToGameX(clientX) {
+    const rect = stage.getBoundingClientRect();
+    return ((clientX - rect.left) / rect.width) * W;
+  }
+
+  function onPointerDown(event) {
+    if (state !== 'playing') return;
+    if (event.target.closest('button')) return;
+    activePointer = event.pointerId;
+    stage.setPointerCapture?.(event.pointerId);
+    targetX = clamp(pointerToGameX(event.clientX), 0, W);
+    event.preventDefault();
+  }
+
+  function onPointerMove(event) {
+    if (state !== 'playing') return;
+    const isMouseHover = event.pointerType === 'mouse' && activePointer === null;
+    if (!isMouseHover && activePointer !== event.pointerId) return;
+    targetX = clamp(pointerToGameX(event.clientX), 0, W);
+    event.preventDefault();
+  }
+
+  function onPointerEnd(event) {
+    if (activePointer === event.pointerId) activePointer = null;
+  }
+
+  stage.addEventListener('pointerdown', onPointerDown, { passive: false });
+  stage.addEventListener('pointermove', onPointerMove, { passive: false });
+  stage.addEventListener('pointerup', onPointerEnd, { passive: true });
+  stage.addEventListener('pointercancel', onPointerEnd, { passive: true });
+  stage.addEventListener('lostpointercapture', () => { activePointer = null; });
+
+  window.addEventListener('keydown', event => {
+    if (['ArrowLeft', 'ArrowRight', 'Space', 'KeyA', 'KeyD', 'KeyP', 'Escape'].includes(event.code)) {
+      event.preventDefault();
+    }
+    if (event.code === 'ArrowLeft' || event.code === 'KeyA') keyLeft = true;
+    if (event.code === 'ArrowRight' || event.code === 'KeyD') keyRight = true;
+    if ((event.code === 'Space' || event.code === 'KeyP') && state === 'playing') pauseGame();
+    else if ((event.code === 'Space' || event.code === 'KeyP') && state === 'paused') resumeGame();
+    if (event.code === 'Escape' && state === 'paused') returnToMenu();
+  });
+
+  window.addEventListener('keyup', event => {
+    if (event.code === 'ArrowLeft' || event.code === 'KeyA') keyLeft = false;
+    if (event.code === 'ArrowRight' || event.code === 'KeyD') keyRight = false;
+  });
+
+  document.querySelectorAll('[data-difficulty]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      difficulty = btn.dataset.difficulty;
+      saveString('dch-difficulty', difficulty);
+      updateDifficultyButtons();
+      bestValue.textContent = padScore(getBest());
+      unlockAudio();
+      tone(470, .05, 'square', .018, 580);
+    });
+  });
+
+  startBtn.addEventListener('click', () => {
+    unlockAudio();
+    requestImmersive(); // Safari skips this internally and remains centered in-browser.
+    beginGame();
+  });
+
+  againBtn.addEventListener('click', beginGame);
+  menuBtn.addEventListener('click', returnToMenu);
+  pauseMenuBtn.addEventListener('click', returnToMenu);
+  pauseBtn.addEventListener('click', () => pauseGame());
+  resumeBtn.addEventListener('click', resumeGame);
+
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    saveString('dch-sound', soundOn ? 'on' : 'off');
+    updateSoundButton();
+    if (soundOn) {
+      unlockAudio();
+      tone(620, .08, 'square', .025, 820);
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state === 'playing') pauseGame(true);
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && fullscreenActiveByUs) {
+      fullscreenActiveByUs = false;
+      CSSImmersive = false;
+      if (state === 'playing') pauseGame(true);
+    }
+    fitStage();
+  });
+
+  window.addEventListener('resize', fitStage);
+  window.visualViewport?.addEventListener('resize', fitStage);
+  window.visualViewport?.addEventListener('scroll', fitStage);
+
+  // Double-tapping the sound button exits the CSS fallback on iPhone without adding another HUD button.
+  let soundTapTime = 0;
+  soundBtn.addEventListener('pointerup', () => {
+    const now = performance.now();
+    if (now - soundTapTime < 360 && CSSImmersive) exitImmersive();
+    soundTapTime = now;
+  });
+
+  updateDifficultyButtons();
+  updateSoundButton();
+  bestValue.textContent = padScore(getBest());
+  setBackground('menu');
+  fitStage();
+  draw();
+
+  Promise.allSettled([
+    trayImg.decode?.() ?? Promise.resolve(),
+    cakeImg.decode?.() ?? Promise.resolve()
+  ]).then(draw);
+})();
+</script>
+</body>
 </html>
