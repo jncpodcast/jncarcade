@@ -346,6 +346,16 @@ footer b { color: #b9b9c3; margin-left: .3rem; }
 @media (min-width: 761px) and (min-aspect-ratio: 4/3) {
   html, body { height: 100%; overflow: hidden; }
   .arcade-shell { height: 100svh; min-height: 0; overflow: hidden; }
+  .boot-start { width: min(94vw, 1600px); }
+  .boot-kicker { font-size: clamp(1rem, 1.4vw, 2.1rem); margin-bottom: clamp(1.5rem, 3vh, 2.4rem); }
+  .jnc-mark { font-size: clamp(12rem, 27vw, 28rem); }
+  .arcade-word {
+    font-size: clamp(5.7rem, 9.6vw, 12rem);
+    margin: clamp(1rem, 2vh, 1.6rem) 0 clamp(2.5rem, 5vh, 4.5rem);
+  }
+  .boot-status { font-size: clamp(1.2rem, 1.5vw, 2.5rem); }
+  .boot-bar { width: min(70vw, 990px); height: 18px; margin: clamp(1.3rem, 2.5vh, 2rem) 0 clamp(1.1rem, 2vh, 1.7rem); }
+  .boot-help { font-size: clamp(.75rem, .8vw, 1.1rem); }
   .arcade {
     display: grid;
     grid-template-rows: 60px auto minmax(0, 1fr) auto 30px;
